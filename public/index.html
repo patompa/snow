@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snow Demos</title>
+    <style type="text/css">
+      body {
+        margin: 0;
+        font-size: 20px;
+      }
+      .video {
+          width: 25%
+      }
+      .ui {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        z-index:100;
+      }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="stream_merger.js"></script>
+    <script type="text/javascript" src="snow.js"></script>
+    <script type="text/javascript" src="snowmesh.js"></script>
+    <script type="text/javascript" src="snowsfu.js"></script>
+    <script type="text/javascript" src="snowmcu.js"></script>
+    <script type="text/javascript" src="snowmcutwo.js"></script>
+    <script type="text/javascript" src="snowmcumulti.js"></script>
+    <script>
+      const socket = io()
+      const mediaConstraints = {
+        audio: true,
+        video: { width: 1280, height: 720 },
+      }
+      const iceServers = {
+       iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
+       ],
+      }; 
+
+      function getRoom() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let room = urlParams.get('room');
+        if (room == null) {
+           room = "demo";
+        }
+        return room;
+      }
+      var snow = null;
+      function init(model) {
+        snow = new Snow(model, {
+               "localVideo": "local-video",
+               "remoteVideos": ["remote-video1","remote-video2"],
+               "mediaConstraints": mediaConstraints,
+               "iceServers": iceServers,
+               "socket": socket});
+        snow.joinRoom(getRoom());
+      }
+      function startCall() {
+          let model = document.getElementById("model").value;
+          init(model);
+      }
+      function hangUp() {
+        if (snow != null) {
+          snow.hangUp();
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <select id="model">
+        <option name="Mesh" value="Mesh">Mesh</option>
+        <option name="SFU" value="SFU">SFU</option>
+        <option name="MCU" value="MCU">MCU</option>
+        <option name="MCUTwo" value="MCUTwo">MCUTwo</option>
+        <option name="MCUMulti" value="MCUMulti">MCUMulti</option>
+      </select>
+      <button onclick="startCall()">Start</button>
+    </div>
+    <div>
+      <video id="local-video" autoplay="autoplay" muted="muted" class="video"></video>
+      <video id="remote-video1" autoplay="autoplay" class="video"></video>
+      <video id="remote-video2" autoplay="autoplay" class="video"></video>
+    </div>
+    <button class="ui" onclick="hangUp()">Hang Up</button>
+  </body>
+</html>
