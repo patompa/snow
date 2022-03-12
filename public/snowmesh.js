@@ -1,6 +1,6 @@
 
 class SnowMesh {
-  constructor(options) {
+  constructor(stats, options) {
     this.localStream = null;
     this.remoteStream1 = null;
     this.remoteStream2 = null;
@@ -8,6 +8,7 @@ class SnowMesh {
     this.rtcPeerConnection2 = null; // OFFER->ANSWER: 0->2, 1->2, 2<-1
     this.roomId = null;
     this.clientId = -1;
+    this.stats = stats;
   }
   setLocalVideo(localVideo) {
     this.localVideo = document.getElementById(localVideo)
@@ -119,6 +120,9 @@ class SnowMesh {
     }
     if ((event.to == 0 && event.from == 2) || (event.to == 1 && event.from == 2)) {
       this.rtcPeerConnection2.setRemoteDescription(new RTCSessionDescription(event.sdp))
+      if (event.to == 0) {
+        this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
+      }
     }
   };
 

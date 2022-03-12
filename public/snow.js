@@ -1,7 +1,8 @@
 class Snow {
   constructor(model, options) {
+    let stats = new Stats(options["stats"]);
     if (model == "Mesh") {
-      this.model = new SnowMesh(options);
+      this.model = new SnowMesh(stats,options);
     } else if (model ==  "SFU") {
       this.model = new SnowSFU(options);
     } else if (model ==  "MCU") {

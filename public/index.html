@@ -21,6 +21,7 @@
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="stream_merger.js"></script>
+    <script type="text/javascript" src="stats.js"></script>
     <script type="text/javascript" src="snow.js"></script>
     <script type="text/javascript" src="snowmesh.js"></script>
     <script type="text/javascript" src="snowsfu.js"></script>
@@ -54,6 +55,7 @@
       var snow = null;
       function init(model) {
         snow = new Snow(model, {
+               "stats": "stats",
                "localVideo": "local-video",
                "remoteVideos": ["remote-video1","remote-video2"],
                "mediaConstraints": mediaConstraints,
@@ -89,5 +91,7 @@
       <video id="remote-video2" autoplay="autoplay" class="video"></video>
     </div>
     <button class="ui" onclick="hangUp()">Hang Up</button>
+    <br>
+    <div id="stats"></div>
   </body>
 </html>
