@@ -8,7 +8,7 @@ class Snow {
     } else if (model ==  "MCU") {
       this.model = new SnowMCU(stats,options);
     } else if (model ==  "MCUTwo") {
-      this.model = new SnowMCUTwo(options);
+      this.model = new SnowMCUTwo(stats,options);
     } else if (model ==  "MCUMulti") {
       this.model = new SnowMCUMulti(options);
     }

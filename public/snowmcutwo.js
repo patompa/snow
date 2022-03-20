@@ -1,6 +1,6 @@
 
 class SnowMCUTwo {
-  constructor(options) {
+  constructor(stats,options) {
     this.localStream = null;
     this.remoteStream1 = null;
     this.remoteStream2 = null;
@@ -8,12 +8,9 @@ class SnowMCUTwo {
     this.rtcPeerConnection2 = null; // OFFER->ANSWER: 0->2, 1->2, 2<-1
     this.roomId = null;
     this.clientId = -1;
-    this.merger1 = new StreamMerger(400,300,true,4/3);
-    this.merger2 = new StreamMerger(400,300,true,4/3);
-    this.merger3 = new StreamMerger(400,300,true,4/3);
     this.mergedStreams1 = [];
     this.mergedStreams2 = [];
-    this.mergedStreams3 = [];
+    this.stats = stats;
   }
   setLocalVideo(localVideo) {
     this.localVideo = document.getElementById(localVideo)
@@ -68,6 +65,21 @@ class SnowMCUTwo {
     console.log("Room full");
     throw Error("Room full");
   }
+
+  initMerger() {
+    let ch = document.getElementById('local-video').getBoundingClientRect().height;
+    let cw = document.getElementById('local-video').getBoundingClientRect().width;
+    let merger = new StreamMerger(cw*2-2,ch,false,cw/ch);
+    merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
+    merger.start();
+    return merger;
+  }
+  mergeStream(merger,stream) {
+    let ch = document.getElementById('local-video').getBoundingClientRect().height;
+    let cw = document.getElementById('local-video').getBoundingClientRect().width;
+    merger.addStream(stream, {streamId: stream.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:1});
+  }
+
   async onStartCall(event) {
     let to = event.to
     let from = event.from
@@ -78,17 +90,15 @@ class SnowMCUTwo {
 
     if (!this.rtcPeerConnection1) {
       this.rtcPeerConnection1 = new RTCPeerConnection(this.iceServers)
-      this.merger2.addStream(this.localStream, {streamId: this.localStream.id});
-      this.merger2.start();
-      this.addRelayTracks(this.rtcPeerConnection1,this.merger2.getResult());
+      this.merger1 = this.initMerger();
+      this.merger2 = this.initMerger();
+      this.addRelayTracks(this.rtcPeerConnection1,this.merger1.getResult());
       this.rtcPeerConnection1.ontrack = this.setRemoteStream1.bind(this)
       this.rtcPeerConnection1.onicecandidate = this.sendIceCandidate1.bind(this)
       await this.createOffer(this.rtcPeerConnection1, 1)
     } else {
-      this.merger3.addStream(this.localStream, {streamId: this.localStream.id});
-      this.merger3.start();
       this.rtcPeerConnection2 = new RTCPeerConnection(this.iceServers)
-      this.addRelayTracks(this.rtcPeerConnection2,this.merger3.getResult());
+      this.addRelayTracks(this.rtcPeerConnection2,this.merger2.getResult());
       this.rtcPeerConnection2.ontrack = this.setRemoteStream2.bind(this)
       this.rtcPeerConnection2.onicecandidate = this.sendIceCandidate2.bind(this)
       await this.createOffer(this.rtcPeerConnection2, 2)
@@ -160,6 +170,9 @@ class SnowMCUTwo {
     stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
     this.localStream = stream
     this.localVideo.srcObject = stream
+    document.getElementById('local-video').style.width = "256px";
+    document.getElementById('local-video').style.height = "144px";
+
   }
 
   addLocalTracks(rtcPeerConnection) {
@@ -209,37 +222,33 @@ class SnowMCUTwo {
     if (this.clientId == 0) {
       console.log("Merged stream 1 " + this.mergedStreams1);
       if  (!this.mergedStreams1.includes(remote.id)) {
-        this.merger1.addStream(remote, {streamId: remote.id});
-        this.merger1.start();
-        this.remoteVideo1.srcObject = this.merger1.getResult();
-        this.remoteStream1 = remote;
+        this.mergeStream(this.merger2, remote);
         this.mergedStreams1.push(remote.id);
       }
-      console.log("Merged stream 3 " + this.mergedStreams3);
-      if  (!this.mergedStreams3.includes(remote.id)) {
-        this.merger3.addStream(remote, {streamId: remote.id});
-        this.mergedStreams3.push(remote.id);
-      }
-    } else {
-      this.remoteVideo1.srcObject = remote;
-      this.remoteStream1 = remote;
+    }
+    this.remoteVideo1.srcObject = remote;
+    this.remoteStream1 = remote;
+
+    if (this.clientId != 0) {
+      let ch = document.getElementById('local-video').getBoundingClientRect().height;
+      let cw = document.getElementById('local-video').getBoundingClientRect().width * 2;
+      document.getElementById('remote-video1').style.height = ch + "px";
+      let percent = 100 * cw / document.body.clientWidth;
+      document.getElementById('remote-video1').style.width = percent + "%";
+      this.stats.init([this.rtcPeerConnection1]);
     }
   }
 
   setRemoteStream2(event) {
    let remote = event.streams[0];
    console.log("Merged stream 1 " + this.mergedStreams1);
-   if  (!this.mergedStreams1.includes(remote.id)) {
-     this.merger1.addStream(remote, {streamId: remote.id});
-     this.remoteStream2 = remote;
-     this.mergedStreams1.push(remote.id);
-   }
-   console.log("Merged stream 2 " + this.mergedStreams2);
    if  (!this.mergedStreams2.includes(remote.id)) {
-     this.merger2.addStream(remote, {streamId: remote.id});
+     this.mergeStream(this.merger1, remote);
      this.mergedStreams2.push(remote.id);
    }
-
+   this.remoteVideo2.srcObject = remote;
+   this.remoteStream2 = remote;
+   this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
   }
 
   sendIceCandidate1(event) {
