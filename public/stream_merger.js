@@ -37,7 +37,6 @@ class StreamMerger{
       this.started = false;
       this.fps = 30;
   }
-
   changeAspectRatio(ratio){
     this.aspectRatio = ratio;
     console.log("Changing aspect ratio to: " + ratio);
@@ -76,7 +75,7 @@ class StreamMerger{
       stream.Xindex = options.Xindex || 0;
       stream.Yindex = options.Yindex || 0;
       stream.portrait = false;
-      stream.aspectRatio = 4/3;
+      stream.aspectRatio = options.aspectRatio || 4/3;
 
       options.x == undefined ? stream.x = (stream.width * stream.Xindex): stream.x = options.x;
       options.x == undefined ? stream.y = (stream.height * stream.Yindex): stream.y = options.y;

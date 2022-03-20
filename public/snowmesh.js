@@ -120,9 +120,6 @@ class SnowMesh {
     }
     if ((event.to == 0 && event.from == 2) || (event.to == 1 && event.from == 2)) {
       this.rtcPeerConnection2.setRemoteDescription(new RTCSessionDescription(event.sdp))
-      if (event.to == 0) {
-        this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
-      }
     }
   };
 
@@ -221,6 +218,7 @@ class SnowMesh {
   setRemoteStream2(event) {
    this.remoteVideo2.srcObject = event.streams[0]
    this.remoteStream2 = event.stream
+   this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
   }
 
   sendIceCandidate1(event) {

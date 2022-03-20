@@ -1,38 +1,36 @@
 class Stats {
   constructor(targetEl) {
     this.targetEl = targetEl;
-    this.stats = []
+    this.stats = {}
+    this.initStats();
+  } 
+  initStats() {
+    this.stats["jitter"] = {"sum":0,"n":0,"sum2":0}
+    this.stats["packetsLost"] = {"sum":0,"n":0,"sum2":0}
+    this.stats["jitterBufferDelay"] = {"sum":0,"n":0,"sum2":0}
+    this.stats["framesPerSecond"] = {"sum":0,"n":0,"sum2":0}
+    this.stats["totalInterFrameDelay"] = {"sum":0,"n":0,"sum2":0}
   }
   collectStats(stat, conn, total) {
-    let statsOutput = "";
     stat.forEach(report => {
-      if (report.type !== "outbound-rtp" && report.type !== "inbound-rtp") {
+      if (report.type !== "inbound-rtp") {
         return;
       }
-      if (report.id.startsWith("RTCOutboundRTPAudioStream") || report.id.startsWith("RTCInboundRTPAudioStream")) {
-        return;
-      };
-      statsOutput += `<h2>${conn} Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
-               `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
-      // Now the statistics for this report; we intentionally drop the ones we
-      // sorted to the top above
-      // just look at inound and outbound video performance
       Object.keys(report).forEach(statName => {
-        if (statName !== "id" && statName !== "timestamp" && statName !== "type") {
-          statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
+        if (statName in this.stats) {
+            this.stats[statName]["sum"] += report[statName];
+            this.stats[statName]["sum2"] += report[statName] * report[statName];
+            this.stats[statName]["n"] += 1
         }
       });
     });
-    this.stats.push(statsOutput);
-    if (this.stats.length == total) {
-      console.log("Updating stats");
-      let html = "";
-      for (let i = 0; i < total; i++) {
-        html += this.stats[i];
-      }
-      document.getElementById(this.targetEl).innerHTML = html;
-      this.stats = [];
-    }
+
+    let html = "";
+    Object.keys(this.stats).forEach(statName => {
+        html += statName + ": " + this.stats[statName]["sum"] + " " + this.stats[statName]["sum2"] + " " +
+                this.stats[statName]["n"] + "<br>";   
+    });
+    document.getElementById(this.targetEl).innerHTML = html;
   }
   init(pcs) {
     let saveStats = this.collectStats.bind(this);

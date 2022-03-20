@@ -1,6 +1,6 @@
 
 class SnowMCU {
-  constructor(options) {
+  constructor(stats,options) {
     this.localStream = null;
     this.remoteStream1 = null;
     this.remoteStream2 = null;
@@ -13,6 +13,7 @@ class SnowMCU {
     this.roomId = null;
     this.clientId = -1;
     this.streamAdded = null;
+    this.stats = stats;
   }
   setLocalVideo(localVideo) {
     this.localVideo = document.getElementById(localVideo)
@@ -84,16 +85,15 @@ class SnowMCU {
     } else if (!this.rtcPeerConnection2) {
       this.rtcPeerConnection2 = new RTCPeerConnection(this.iceServers)
       // start merge
-      // this.addLocalTracks(this.rtcPeerConnection2)
-      // this.addRelayTracks(this.rtcPeerConnection2,this.remoteStream1)
-      var merger = new StreamMerger(100,100,true,4/3);
+      let ch = document.getElementById('local-video').getBoundingClientRect().height;
+      let cw = document.getElementById('local-video').getBoundingClientRect().width;
+      let merger = new StreamMerger(cw*2-1,ch,false,cw/ch);
       console.log(this.localStream);
       console.log(this.remoteStream1);
-      merger.addStream(this.localStream, {streamId: this.localStream.id});
-      merger.addStream(this.remoteStream1, {streamId: this.remoteStream1.id});
+      merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
+      merger.addStream(this.remoteStream1, {streamId: this.remoteStream1.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:1});
       merger.start();
       this.addRelayTracks(this.rtcPeerConnection2,merger.getResult());
-
       // end merge
       this.rtcPeerConnection2.ontrack = this.setRemoteStream2.bind(this)
       this.rtcPeerConnection2.onicecandidate = this.sendIceCandidate2.bind(this)
@@ -271,6 +271,16 @@ class SnowMCU {
         this.onStartCall({'from':2,'to': 0});
       }.bind(this),10000);
     }
+    if (this.clientId == 2) {
+      this.stats.init([this.rtcPeerConnection1]);
+      let ch = document.getElementById('local-video').getBoundingClientRect().height;
+      let cw = document.getElementById('local-video').getBoundingClientRect().width * 2;
+      //document.getElementById('remote-video1').style.width = "50%";
+      document.getElementById('remote-video1').style.height = ch + "px";
+      //document.getElementById('remote-video1').style.width = cw + "px";
+      let percent = 100 * cw / document.body.clientWidth;
+      document.getElementById('remote-video1').style.width = percent + "%";
+    }
   }
 
   setRemoteStream2(event) {
@@ -282,7 +292,7 @@ class SnowMCU {
         this.onStartCall({'from':1,'to': 0});
       }.bind(this),10000);
     }
-
+    this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
   }
 
   setRemoteStream3(event) {

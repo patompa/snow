@@ -1,6 +1,6 @@
 
 class SnowSFU {
-  constructor(options) {
+  constructor(stats,options) {
     this.localStream = null;
     this.remoteStream1 = null;
     this.remoteStream2 = null;
@@ -13,6 +13,7 @@ class SnowSFU {
     this.roomId = null;
     this.clientId = -1;
     this.streamAdded = null;
+    this.stats = stats;
   }
   setLocalVideo(localVideo) {
     this.localVideo = document.getElementById(localVideo)
@@ -255,6 +256,7 @@ class SnowSFU {
     if (this.clientId == 2 && event.streams[0]["id"] != this.streamAdded) {
       this.remoteVideo2.srcObject = event.streams[0];
       this.remoteStream2 = event.streams[0];
+      this.stats.init([this.rtcPeerConnection1]);
     }
     if (this.clientId == 0 && !this.startedRelay) {
       this.startedRelay = true;
@@ -272,8 +274,8 @@ class SnowSFU {
       setTimeout(function () {
         this.onStartCall({'from':1,'to': 0});
       }.bind(this),10000);
-    }
-
+   }
+   this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
   }
 
   setRemoteStream3(event) {

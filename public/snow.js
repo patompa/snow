@@ -4,9 +4,9 @@ class Snow {
     if (model == "Mesh") {
       this.model = new SnowMesh(stats,options);
     } else if (model ==  "SFU") {
-      this.model = new SnowSFU(options);
+      this.model = new SnowSFU(stats,options);
     } else if (model ==  "MCU") {
-      this.model = new SnowMCU(options);
+      this.model = new SnowMCU(stats,options);
     } else if (model ==  "MCUTwo") {
       this.model = new SnowMCUTwo(options);
     } else if (model ==  "MCUMulti") {
