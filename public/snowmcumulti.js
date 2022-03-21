@@ -1,13 +1,14 @@
 
 class SnowMCUMulti {
-  constructor(options) {
+  constructor(stats, options) {
     this.localStream = null;
     this.remoteStreams = [];
     this.rtcPeerConnections = []
     this.roomId = null;
     this.clientId = -1;
-    this.merger = new StreamMerger(400,300,true,4/3);
     this.mergedStreams = [];
+    this.stats = stats;
+    this.currentIdx = 0;
   }
   setLocalVideo(localVideo) {
   }
@@ -53,6 +54,23 @@ class SnowMCUMulti {
       this.socket.emit('start_call', {roomId: this.roomId, to: 0, from: this.clientId})
     }
   }
+  
+  initMerger() {
+    let ch = document.getElementById('local-video').getBoundingClientRect().height;
+    let cw = document.getElementById('local-video').getBoundingClientRect().width;
+    this.merger = new StreamMerger(cw*3-2,ch,false,cw/ch);
+    this.merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
+    this.merger.start();
+  }
+  mergeStream(stream) {
+    this.currentIdx += 1;
+    let ch = document.getElementById('local-video').getBoundingClientRect().height;
+    let cw = document.getElementById('local-video').getBoundingClientRect().width;
+    this.merger.addStream(stream, {streamId: stream.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:this.currentIdx});
+  }
+
+
+
   async onStartCall(event) {
     let to = event.to
     let from = event.from
@@ -63,6 +81,9 @@ class SnowMCUMulti {
 
     let pc = new RTCPeerConnection(this.iceServers);
     this.rtcPeerConnections.push(pc);
+    if (this.rtcPeerConnections.length == 1) {
+      this.initMerger();
+    }
     this.addTracks(pc,this.merger.getResult());
     pc.ontrack = this.setRemoteStream.bind(this);
     pc.onicecandidate = this.sendIceCandidate.bind(this);
@@ -118,10 +139,8 @@ class SnowMCUMulti {
     let stream
     stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
     this.localStream = stream
-    if (this.clientId == 0) {
-      this.merger.addStream(this.localStream, {streamId: this.localStream.id});
-      this.merger.start()
-    }
+    document.getElementById('local-video').style.width = "256px";
+    document.getElementById('local-video').style.height = "144px";
   }
 
   addTracks(rtcPeerConnection, stream) {
@@ -166,15 +185,25 @@ class SnowMCUMulti {
     if (this.clientId == 0) {
       console.log("Merged stream  " + this.mergedStreams);
       if  (!this.mergedStreams.includes(remote.id)) {
-        this.merger.addStream(remote, {streamId: remote.id});
+        this.mergeStream(remote);
         this.remoteVideo.srcObject = this.merger.getResult();
         this.remoteStreams.push(remote);
         this.mergedStreams.push(remote.id);
       }
+      if (this.rtcPeerConnections.length == 2) {
+        this.stats.init(this.rtcPeerConnections);
+      }
     } else {
       this.remoteVideo.srcObject = remote;
       this.remoteStreams.push(remote);
+      this.stats.init(this.rtcPeerConnections);
     }
+
+    let ch = document.getElementById('local-video').getBoundingClientRect().height;
+    let cw = document.getElementById('local-video').getBoundingClientRect().width * 3;
+    document.getElementById('remote-video1').style.height = ch + "px";
+    let percent = 100 * cw / document.body.clientWidth;
+    document.getElementById('remote-video1').style.width = percent + "%";
   }
 
   sendIceCandidate(event) {

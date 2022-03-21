@@ -10,7 +10,7 @@ class Snow {
     } else if (model ==  "MCUTwo") {
       this.model = new SnowMCUTwo(stats,options);
     } else if (model ==  "MCUMulti") {
-      this.model = new SnowMCUMulti(options);
+      this.model = new SnowMCUMulti(stats,options);
     }
     if ("localVideo" in options) {
       this.model.setLocalVideo(options["localVideo"]);
