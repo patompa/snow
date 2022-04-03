@@ -27,8 +27,14 @@ class Stats {
 
     let html = "";
     Object.keys(this.stats).forEach(statName => {
-        html += statName + ": " + this.stats[statName]["sum"] + " " + this.stats[statName]["sum2"] + " " +
-                this.stats[statName]["n"] + "<br>";   
+        let n = this.stats[statName]["n"];
+        let tot =  this.stats[statName]["sum"];
+        let mean = tot/n;
+        let sum2 =  this.stats[statName]["sum2"];
+        var std = Math.sqrt((sum2 / n) - (mean * mean));
+        html += statName + ": " + mean + " " + std  + "<br>";
+
+        
     });
     document.getElementById(this.targetEl).innerHTML = html;
   }

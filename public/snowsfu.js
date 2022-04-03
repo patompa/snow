@@ -172,6 +172,7 @@ class SnowSFU extends SnowBase {
       }.bind(this),10000);
     }
     this.resizeRemote(1,1);
+    this.resizeRemote(2,1);
   }
 
   setRemoteStream2(event) {
@@ -184,6 +185,7 @@ class SnowSFU extends SnowBase {
       }.bind(this),10000);
    }
    this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
+   this.resizeRemote(1,1);
    this.resizeRemote(2,1);
   }
 

@@ -129,13 +129,18 @@ class SnowMesh extends SnowBase {
     this.remoteVideo1.srcObject = event.streams[0]
     this.remoteStream1 = event.stream
     this.resizeRemote(1,1);
+    if (this.rtcPeerConnection1 != null && this.rtcPeerConnection2 != null) {
+      this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
+    }
   }
 
   setRemoteStream2(event) {
    this.remoteVideo2.srcObject = event.streams[0]
    this.remoteStream2 = event.stream
-   this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
    this.resizeRemote(2,1);
+   if (this.rtcPeerConnection1 != null && this.rtcPeerConnection2 != null) {
+     this.stats.init([this.rtcPeerConnection1, this.rtcPeerConnection2]);
+   }
   }
 
   sendIceCandidate1(event) {
