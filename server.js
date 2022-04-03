@@ -43,7 +43,10 @@ io.on('connection', (socket) => {
     console.log(`Broadcasting hangup event to peers in room ${event.roomId} ${event.from}`)
     socket.broadcast.to(event.roomId).emit('hangup', {from: event.from})
   })
-
+  socket.on('unsubscribe', (event) => {
+    console.log(`Leaving room ${event.roomId} ${event.from}`)
+    socket.leave(event.roomId);
+  })
 })
 
 // START THE SERVER =================================================================

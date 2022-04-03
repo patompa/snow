@@ -34,5 +34,6 @@ class Snow {
   }
   hangUp() {
     this.model.hangUp();
+    this.model.leave();
   }
 }

@@ -1,13 +1,10 @@
 
-class SnowMCUMulti {
+class SnowMCUMulti extends SnowBase {
   constructor(stats, options) {
-    this.localStream = null;
+    super(stats,options);
     this.remoteStreams = [];
     this.rtcPeerConnections = []
-    this.roomId = null;
-    this.clientId = -1;
     this.mergedStreams = [];
-    this.stats = stats;
     this.currentIdx = 0;
   }
   setLocalVideo(localVideo) {
@@ -16,35 +13,6 @@ class SnowMCUMulti {
     this.remoteVideo = document.getElementById(remoteVideos[0]);
     return this;
  }
-  setWebSocket(socket) {
-    this.socket = socket;
-    this.initEvents();
-    return this;
-  }
-  setMediaConstraints(mediaConstraints) {
-    this.mediaConstraints = mediaConstraints;
-    return this;
-  }
-  setIceServers(iceServers) {
-    this.iceServers = iceServers;
-    return this;
-  }
-
-  initEvents() {
-    this.socket.on('room_created', this.onRoomCreated.bind(this));
-    this.socket.on('room_joined',this.onRoomJoined.bind(this));
-    this.socket.on('start_call', this.onStartCall.bind(this));
-    this.socket.on('webrtc_offer', this.onWebRTCOffer.bind(this));
-    this.socket.on('webrtc_answer', this.onWebRTCAnswer.bind(this));
-    this.socket.on('webrtc_ice_candidate', this.onWebRTCICECandidate.bind(this));
-    this.socket.on('hangup', this.onHangUp.bind(this));
-  }
-
-  async onRoomCreated() {
-    console.log('Socket event callback: room_created')
-    this.clientId = 0;
-    await this.setLocalStream()
-  }
   async onRoomJoined(event) {
     console.log('Socket event callback: room_joined by ' + event.clientId)
     this.clientId = event.clientId
@@ -84,7 +52,7 @@ class SnowMCUMulti {
     if (this.rtcPeerConnections.length == 1) {
       this.initMerger();
     }
-    this.addTracks(pc,this.merger.getResult());
+    this.addRelayTracks(pc,this.merger.getResult());
     pc.ontrack = this.setRemoteStream.bind(this);
     pc.onicecandidate = this.sendIceCandidate.bind(this);
     await this.createOffer(pc, event.from)
@@ -96,7 +64,7 @@ class SnowMCUMulti {
     }
     console.log('Socket event callback: webrtc_offer to ' + event.to + " from " + event.from);
     let pc = new RTCPeerConnection(this.iceServers);
-    this.addTracks(pc, this.localStream);
+    this.addRelayTracks(pc, this.localStream);
     pc.ontrack = this.setRemoteStream.bind(this);
     pc.onicecandidate = this.sendIceCandidate.bind(this);
     pc.setRemoteDescription(new RTCSessionDescription(event.sdp));
@@ -126,56 +94,6 @@ class SnowMCUMulti {
     this.rtcPeerConnections[this.rtcPeerConnections.length-1].addIceCandidate(candidate);
   }
 
-  joinRoom(room) {
-    if (room === '') {
-      throw new Error('Please type a room ID');
-    } else {
-      this.roomId = room
-      socket.emit('join', {roomId: this.roomId})
-    }
-  }
-
-  async setLocalStream() {
-    let stream
-    stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
-    this.localStream = stream
-    document.getElementById('local-video').style.width = "256px";
-    document.getElementById('local-video').style.height = "144px";
-  }
-
-  addTracks(rtcPeerConnection, stream) {
-    stream.getTracks().forEach((track) => {
-      rtcPeerConnection.addTrack(track, stream)
-    })
-  }
-
-  async createOffer(rtcPeerConnection, target) {
-    let sessionDescription
-    sessionDescription = await rtcPeerConnection.createOffer()
-    rtcPeerConnection.setLocalDescription(sessionDescription)
-    console.log("Sending offer from " + this.clientId + " to " + target);
-    this.socket.emit('webrtc_offer', {
-      type: 'webrtc_offer',
-      sdp: sessionDescription,
-      from: this.clientId, 
-      to: target, 
-      roomId: this.roomId
-    })
-  }
-
-  async createAnswer(rtcPeerConnection, target) {
-    let sessionDescription
-    sessionDescription = await rtcPeerConnection.createAnswer()
-    rtcPeerConnection.setLocalDescription(sessionDescription)
-    console.log("Sending answer from " + this.clientId + " to " + target);
-    this.socket.emit('webrtc_answer', {
-      type: 'webrtc_answer',
-      sdp: sessionDescription,
-      from: this.clientId,
-      to: target,
-      roomId: this.roomId,
-    })
-  }
 
   setRemoteStream(event) {
     console.log("Setting Remote Stream from client " + this.clientId);
@@ -199,11 +117,7 @@ class SnowMCUMulti {
       this.stats.init(this.rtcPeerConnections);
     }
 
-    let ch = document.getElementById('local-video').getBoundingClientRect().height;
-    let cw = document.getElementById('local-video').getBoundingClientRect().width * 3;
-    document.getElementById('remote-video1').style.height = ch + "px";
-    let percent = 100 * cw / document.body.clientWidth;
-    document.getElementById('remote-video1').style.width = percent + "%";
+    this.resizeRemote(1,3);
   }
 
   sendIceCandidate(event) {
@@ -225,22 +139,15 @@ class SnowMCUMulti {
   }
 
   onHangUp(event) {
-    this.hangUp();
+    this.tearDown();
+    this.leave();
   }
 
-  closeSingleStream (stream) {
-    if (stream) {
-      var tracks = stream.getTracks();
-      if (tracks) {
-        tracks.forEach(function(track) {
-          track.stop();
-         });
-      }
-    }
-  };
-
-
   hangUp() {
+    this.tearDown();
+  }
+
+  tearDown() {
     console.log("Hanging up all")
     this.remoteVideo.style = 'display: none'
     this.remoteVideo.src = "";
