@@ -50,11 +50,11 @@ class SnowMCU extends SnowBase {
       // start merge
       let ch = document.getElementById('local-video').getBoundingClientRect().height;
       let cw = document.getElementById('local-video').getBoundingClientRect().width;
-      let merger = new StreamMerger(cw*2-2,ch,false,cw/ch);
+      let merger = new StreamMerger(cw-2,ch,2);
       console.log(this.localStream);
       console.log(this.remoteStream1);
-      merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
-      merger.addStream(this.remoteStream1, {streamId: this.remoteStream1.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:1});
+      merger.addStream(this.localStream);
+      merger.addStream(this.remoteStream1);
       merger.start();
       this.addRelayTracks(this.rtcPeerConnection2,merger.getResult());
       // end merge

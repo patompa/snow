@@ -31,15 +31,13 @@ class SnowMCUTwo extends SnowBase {
   initMerger() {
     let ch = document.getElementById('local-video').getBoundingClientRect().height;
     let cw = document.getElementById('local-video').getBoundingClientRect().width;
-    let merger = new StreamMerger(cw*2-2,ch,false,cw/ch);
-    merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
+    let merger = new StreamMerger(cw-2,ch,2);
+    merger.addStream(this.localStream);
     merger.start();
     return merger;
   }
   mergeStream(merger,stream) {
-    let ch = document.getElementById('local-video').getBoundingClientRect().height;
-    let cw = document.getElementById('local-video').getBoundingClientRect().width;
-    merger.addStream(stream, {streamId: stream.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:1});
+    merger.addStream(stream);
   }
 
   async onStartCall(event) {

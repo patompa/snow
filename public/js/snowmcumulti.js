@@ -26,15 +26,13 @@ class SnowMCUMulti extends SnowBase {
   initMerger() {
     let ch = document.getElementById('local-video').getBoundingClientRect().height;
     let cw = document.getElementById('local-video').getBoundingClientRect().width;
-    this.merger = new StreamMerger(cw*3-2,ch,false,cw/ch);
-    this.merger.addStream(this.localStream, {streamId: this.localStream.id, width: cw, height: ch, aspectRatio: cw/ch});
+    this.merger = new StreamMerger(cw-2,ch,3);
+    this.merger.addStream(this.localStream)
     this.merger.start();
   }
   mergeStream(stream) {
     this.currentIdx += 1;
-    let ch = document.getElementById('local-video').getBoundingClientRect().height;
-    let cw = document.getElementById('local-video').getBoundingClientRect().width;
-    this.merger.addStream(stream, {streamId: stream.id, width: cw, height: ch, aspectRatio: cw/ch,  Xindex:this.currentIdx});
+    this.merger.addStream(stream)
   }
 
 
