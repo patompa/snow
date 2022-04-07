@@ -5,11 +5,37 @@ class Stats {
     this.initStats();
   } 
   initStats() {
-    this.stats["jitter"] = {"sum":0,"n":0,"sum2":0}
-    this.stats["packetsLost"] = {"sum":0,"n":0,"sum2":0}
-    this.stats["jitterBufferDelay"] = {"sum":0,"n":0,"sum2":0}
-    this.stats["framesPerSecond"] = {"sum":0,"n":0,"sum2":0}
-    this.stats["totalInterFrameDelay"] = {"sum":0,"n":0,"sum2":0}
+    this.statNames = ["jitter","packetsLost","jitterBufferDelay","totalInterFrameDelay"];
+    this.statNames.forEach(statName => {
+      this.stats[statName] = {"sum":0,"n":0,"sum2":0}
+    });
+  }
+  saveStats(model) {
+    let data = localStorage.getItem("stats");
+    if (data == null) {
+      data  = '{"stats":[]}';
+    }
+    let report = JSON.parse(data);
+    let stat = {'model':model, 'time': new Date().getTime()};
+    for (let i=0; i < this.statNames.length; i++) {
+      let statName = this.statNames[i];
+      let s = this.getStat(statName);
+      stat[statName] = s;
+    };
+    report["stats"].push(stat);
+    localStorage.setItem("stats",JSON.stringify(report));
+  }
+  getStat(statName) {
+     let n = this.stats[statName]["n"];
+     if (n == 0) {
+        return {"mean": 0, "std": 0};
+     }
+     let tot =  this.stats[statName]["sum"];
+     let mean = tot/n;
+     let sum2 =  this.stats[statName]["sum2"];
+     var std = Math.sqrt((sum2 / n) - (mean * mean));
+     return {"mean": mean, "std": std};
+
   }
   collectStats(stat, conn, total) {
     stat.forEach(report => {
@@ -27,14 +53,8 @@ class Stats {
 
     let html = "";
     Object.keys(this.stats).forEach(statName => {
-        let n = this.stats[statName]["n"];
-        let tot =  this.stats[statName]["sum"];
-        let mean = tot/n;
-        let sum2 =  this.stats[statName]["sum2"];
-        var std = Math.sqrt((sum2 / n) - (mean * mean));
-        html += statName + ": " + mean + " " + std  + "<br>";
-
-        
+        let stat = this.getStat(statName);
+        html += statName + ": " + stat["mean"] + " " + stat["std"]  + "<br>";
     });
     document.getElementById(this.targetEl).innerHTML = html;
   }

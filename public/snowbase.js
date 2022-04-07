@@ -72,6 +72,10 @@ class SnowBase {
     }
   }
 
+  setModel(model) {
+    this.model = model;
+  }
+
   async onFullRoom() {
     console.log("Room full");
     throw Error("Room full");
@@ -131,6 +135,7 @@ class SnowBase {
     }
     this.close2();
     this.leave();
+    this.hangupDone();
   }
   leave() {
      this.socket.emit('unsubscribe', {
@@ -179,5 +184,10 @@ class SnowBase {
         roomId: this.roomId,
         from: this.clientId
     });
+    this.hangupDone();
+  };
+
+  hangupDone() {
+    this.stats.saveStats(this.model);
   };
 }

@@ -14,8 +14,14 @@
       }
       .ui {
         position: absolute;
-        left: 0px;
-        bottom: 0px;
+        left: 5px;
+        bottom: 5px;
+        z-index:100;
+      }
+      .link-to-download {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
         z-index:100;
       }
     </style>
@@ -73,9 +79,15 @@
           snow.hangUp();
         }
       }
+      function onLoad() {
+         document.getElementById("download").addEventListener("click", function (event) {
+           console.log("downloading stats");
+           this.href = "data:application/json," + escape(localStorage.getItem("stats"));
+         },false);
+      }
     </script>
   </head>
-  <body>
+  <body onload="onLoad()">
     <div>
       <select id="model">
         <option name="Mesh" value="Mesh">Mesh</option>
@@ -92,6 +104,8 @@
       <video id="remote-video2" autoplay="autoplay" class="video"></video>
     </div>
     <button class="ui" onclick="hangUp()">Hang Up</button>
+    <a id="download" class="link-to-download" href="download" download="stats.json">Export Stats</a>
+
     <br>
     <div id="stats"></div>
   </body>

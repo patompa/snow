@@ -27,6 +27,7 @@ class Snow {
     if ("socket" in options) {
       this.model.setWebSocket(options["socket"]);
     }
+    this.model.setModel(model);
   }
 
   joinRoom(room) {
