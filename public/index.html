@@ -18,6 +18,13 @@
         bottom: 5px;
         z-index:100;
       }
+      .elapsed {
+        position: absolute;
+        left: 85px;
+        bottom: 5px;
+        z-index:100;
+      }
+
       .link-to-download {
         position: absolute;
         right: 5px;
@@ -104,6 +111,7 @@
       <video id="remote-video2" autoplay="autoplay" class="video"></video>
     </div>
     <button class="ui" onclick="hangUp()">Hang Up</button>
+    <div id="seconds" class="elapsed"></div>
     <a id="download" class="link-to-download" href="download" download="stats.json">Export Stats</a>
 
     <br>

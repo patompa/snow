@@ -3,7 +3,16 @@ class Stats {
     this.targetEl = targetEl;
     this.stats = {}
     this.initStats();
+    this.startTime = (new Date().getTime()/1000)
+    this.elapsed = 0;
+    this.seconds = document.getElementById("seconds");
+    var that = this;
+    setInterval(function() {that.updateTime()}, 1000);
   } 
+  updateTime() {
+    this.elapsed = (new Date().getTime()/1000) - this.startTime;
+    this.seconds.innerHTML = Math.round(this.elapsed,0);
+  }
   initStats() {
     this.statNames = ["jitter","packetsLost","jitterBufferDelay","totalInterFrameDelay"];
     this.statNames.forEach(statName => {
@@ -38,6 +47,9 @@ class Stats {
 
   }
   collectStats(stat, conn, total) {
+    if (this.elapsed < 60) {
+      return;
+    }
     stat.forEach(report => {
       if (report.type !== "inbound-rtp") {
         return;
