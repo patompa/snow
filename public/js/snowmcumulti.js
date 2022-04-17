@@ -139,10 +139,12 @@ class SnowMCUMulti extends SnowBase {
   onHangUp(event) {
     this.tearDown();
     this.leave();
+    this.hangupDone();
   }
 
   hangUp() {
     this.tearDown();
+    this.hangupDone();
   }
 
   tearDown() {
