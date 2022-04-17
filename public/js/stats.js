@@ -6,6 +6,7 @@ class Stats {
     this.startTime = (new Date().getTime()/1000)
     this.elapsed = 0;
     this.seconds = document.getElementById("seconds");
+    this.saved = false;
     var that = this;
     setInterval(function() {that.updateTime()}, 1000);
   } 
@@ -20,12 +21,18 @@ class Stats {
     });
   }
   saveStats(model) {
+    if (this.saved) {
+      return;
+    }
+    this.saved = true;
     let data = localStorage.getItem("stats");
     if (data == null) {
       data  = '{"stats":[]}';
     }
     let report = JSON.parse(data);
-    let stat = {'model':model, 'time': new Date().getTime()};
+    let endTime = new Date().getTime();
+    let duration = endTime/1000 - this.startTime;
+    let stat = {'model':model, 'duration': duration, 'start_time': this.startTime*1000, 'end_time': endTime};
     for (let i=0; i < this.statNames.length; i++) {
       let statName = this.statNames[i];
       let s = this.getStat(statName);
