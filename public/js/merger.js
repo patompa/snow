@@ -1,4 +1,5 @@
-
+// Adapted from
+// https://github.com/ant-media/StreamApp/blob/master/src/main/webapp/js/stream_merger.js
 
 class StreamMerger{
   constructor(width=400, height=300, num_streams=2){
