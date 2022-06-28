@@ -1,7 +1,7 @@
 # Serverless n-party calls over WebRTC (SnoW)
 
 This is the open-source companion code for the
-SnoW paper. It contains both a reference implementation
+[SnoW paper](https://arxiv.org/abs/2206.12762). It contains both a reference implementation
 of the multi-party communication models presented, as
 well as experiment code to reproduce the results
 in different setups.
