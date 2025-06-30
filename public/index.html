@@ -18,6 +18,27 @@
         bottom: 5px;
         z-index:100;
       }
+      .ui1 {
+        position: absolute;
+        left: 5px;
+        bottom: 40px;
+        z-index:100;
+      }
+      .ui2 {
+        position: absolute;
+        left: 105px;
+        bottom: 40px;
+        z-index:100;
+      }
+      .ui3 {
+        position: absolute;
+        left: 205px;
+        bottom: 40px;
+        z-index:100;
+      }
+      .pip {
+	visibility: hidden;
+      }
       .elapsed {
         position: absolute;
         left: 85px;
@@ -80,12 +101,57 @@
       }
       function startCall() {
           let model = document.getElementById("model").value;
+	  if (model == "MCUTwo") {
+             document.getElementById("pip1").classList.remove("pip");
+             document.getElementById("pip2").classList.remove("pip");
+             document.getElementById("pip3").classList.remove("pip");
+	  } 
           init(model);
       }
       function hangUp() {
         if (snow != null) {
           snow.hangUp();
         }
+      }
+      var old_height1 = null;
+      var old_width1 = null;
+      var old_height2 = null;
+      var old_width2 = null;
+      function pip1() {
+	  if (old_height1 == null) {
+	    old_height1 = snow.model.merger1.merger._streams[1].height;
+	    old_width1 = snow.model.merger1.merger._streams[1].width;
+	    snow.model.merger1.merger._streams[1].height = old_height1/2;
+	    snow.model.merger1.merger._streams[1].width = old_width1/2;
+	    snow.model.merger1.merger._streams[1].x = snow.model.merger1.merger._streams[1].x/2; 
+            snow.model.merger1.merger._canvas.width = snow.model.merger1.merger._canvas.width/2;
+	  }
+      }
+      function pip2() {
+	  if (old_height2 == null) {
+	    old_height2 = snow.model.merger2.merger._streams[1].height;
+	    old_width2 = snow.model.merger2.merger._streams[1].width;
+	    snow.model.merger2.merger._streams[1].height = old_height2/2;
+	    snow.model.merger2.merger._streams[1].width = old_width2/2;
+	    snow.model.merger2.merger._streams[1].x = snow.model.merger2.merger._streams[1].x/2; 
+            snow.model.merger2.merger._canvas.width = snow.model.merger2.merger._canvas.width/2;
+	  }
+      }
+      function pipreset() {
+          if (old_height1 != null) {
+	    snow.model.merger1.merger._streams[1].height = old_height1;
+	    snow.model.merger1.merger._streams[1].width = old_width1;
+	    snow.model.merger1.merger._streams[1].x = snow.model.merger1.merger._streams[1].x*2; 
+            snow.model.merger1.merger._canvas.width = snow.model.merger1.merger._canvas.width*2;
+	    old_height1 = null;
+          }
+          if (old_height2 != null) {
+	    snow.model.merger2.merger._streams[1].height = old_height2;
+	    snow.model.merger2.merger._streams[1].width = old_width2;
+	    snow.model.merger2.merger._streams[1].x = snow.model.merger2.merger._streams[1].x*2; 
+            snow.model.merger2.merger._canvas.width = snow.model.merger2.merger._canvas.width*2;
+	    old_height2 = null;
+	  }
       }
       function onLoad() {
          document.getElementById("download").addEventListener("click", function (event) {
@@ -111,6 +177,9 @@
       <video id="remote-video1" autoplay="autoplay" class="video"></video>
       <video id="remote-video2" autoplay="autoplay" class="video"></video>
     </div>
+    <button id="pip1" class="ui1 pip" onclick="pip1()">PiP Stream 1</button><br>
+    <button id="pip2" class="ui2 pip" onclick="pip2()">PiP Stream 2</button><br>
+    <button id="pip3" class="ui3 pip" onclick="pipreset()">PiP Reset</button>
     <button class="ui" onclick="hangUp()">Hang Up</button>
     <div id="seconds" class="elapsed"></div>
     <a id="download" class="link-to-download" href="download" download="stats.json">Export Stats</a>
