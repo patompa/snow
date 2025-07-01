@@ -98,6 +98,22 @@
                "iceServers": iceServers,
                "socket": socket});
         snow.joinRoom(getRoom());
+
+        video = document.getElementById("remote-video1");
+        video.addEventListener('loadedmetadata', function() {
+            console.log('Remote video videoWidth: ' + this.videoWidth +
+              'px,  videoHeight: ' + this.videoHeight + 'px');
+        });
+	
+	video.onresize = function() {
+            console.log('Remote video size changed to ' +
+             video.videoWidth + 'x' + video.videoHeight);
+	    video.style.width = '' + video.videoWidth + 'px';
+	    
+	};
+
+
+
       }
       function startCall() {
           let model = document.getElementById("model").value;
